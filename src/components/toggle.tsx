@@ -18,13 +18,31 @@ export function ModeToggle() {
 
   const isDark = resolvedTheme === "dark";
 
+  // Función que realmente cambia el tema
+  const switchTheme = () => {
+    setTheme(isDark ? "light" : "dark");
+  };
+
+  // En el click, primero verificamos si existe la API de view transitions
+  const handleClick = () => {
+    if (!document.startViewTransition) {
+      // Si no está disponible, cambiamos directamente sin animación
+      switchTheme();
+    } else {
+      // Con animación de View Transition
+      document.startViewTransition(() => {
+        switchTheme();
+      });
+    }
+  };
+
   return (
     <Button
-      onClick={() => setTheme(isDark ? "light" : "dark")}
+      onClick={handleClick}
       variant="ghost"
       size="icon"
       className={cn(
-        "fixed top-4 right-4 z-50",
+        "fixed top-4 left-4 z-50",
         "transition-all duration-300",
         "bg-muted/70 hover:bg-muted",
         "text-foreground border border-border shadow",

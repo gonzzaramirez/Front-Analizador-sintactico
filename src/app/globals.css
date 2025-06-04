@@ -158,3 +158,41 @@
     letter-spacing: var(--tracking-normal);
   }
 }
+
+::view-transition-group(root) {
+  animation-duration: 0.8s;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+::view-transition-new(root) {
+  animation-name: circle-reveal-light;
+}
+
+::view-transition-old(root),
+.dark::view-transition-old(root) {
+  animation: none;
+  mix-blend-mode: normal;
+  z-index: -1;
+}
+
+.dark::view-transition-new(root) {
+  animation-name: circle-reveal-dark;
+}
+
+@keyframes circle-reveal-dark {
+  from {
+    clip-path: circle(0% at 24px 40px);
+  }
+  to {
+    clip-path: circle(150% at 24px 40px);
+  }
+}
+
+@keyframes circle-reveal-light {
+  from {
+    clip-path: circle(0% at 24px 40px);
+  }
+  to {
+    clip-path: circle(150% at 24px 40px);
+  }
+}
