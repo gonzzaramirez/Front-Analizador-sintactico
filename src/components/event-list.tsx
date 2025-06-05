@@ -7,15 +7,16 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Calendar, Clock, Trash2, CalendarX2 } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+//import { Badge } from "@/components/ui/badge";
+//import { Button } from "@/components/ui/button";
+//import { Calendar, Clock, Trash2, CalendarX2 } from "lucide-react";
+import { CalendarX2 } from "lucide-react";
+//import {
+//Tooltip,
+//TooltipContent,
+//TooltipProvider,
+// TooltipTrigger,
+//} from "@/components/ui/tooltip";
 // import type { Event } from "@/lib/types"
 
 // interface EventsListProps {
