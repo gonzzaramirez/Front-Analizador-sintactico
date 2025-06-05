@@ -1,16 +1,18 @@
-# Proyecto Next.js + ShadCN + TweakCN
+# 🗂️ Analizador Sintáctico de Agenda en Español (Frontend)
 
-## 🛠️ Tecnologías
+Frontend del proyecto de analizador sintáctico de una agenda, Para la materia de Teoria de computación de la Lic. En sistemas de informacion de la UNNE.
 
-- ⚛️ **[Next.js](https://nextjs.org/)**
-- 🎨 **[ShadCN/UI](https://ui.shadcn.dev/)**
-- 🧩 **[TweakCN](https://tweakui.dev/)**
-- 💨 **[Tailwind CSS](https://tailwindcss.com/)**
-- 🧠 **TypeScript**
+## 🚀 Stack
+
+- ⚛️ [Next.js](https://nextjs.org/) – Framework React
+- 🎨 [ShadCN/UI](https://ui.shadcn.dev/) – Componentes accesibles y personalizables
+- 🧩 [TweakCN](https://tweakui.dev/) – Editor visual de diseño
+- 💨 [Tailwind CSS](https://tailwindcss.com/) – Utilidades CSS
+- 🧠 TypeScript – Tipado fuerte para JavaScript
 
 ## ⚙️ Instalación
 
-Cloná el repo y corré los siguientes comandos:
+Cloná el repo y ejecutá:
 
 ```bash
 npm install
