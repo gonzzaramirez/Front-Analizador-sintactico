@@ -31,10 +31,6 @@ export function CommandForm() {
       text: "El lunes tengo que llevar el auto al mecánico",
       description: "Crea un recordatorio para el próximo lunes",
     },
-    {
-      text: "Anotá cita médica el 12 de mayo a las 9hs",
-      description: "Crea un evento para una fecha específica",
-    },
   ];
 
   return (
@@ -80,7 +76,11 @@ export function CommandForm() {
             <TooltipProvider key={index}>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="outline" size="sm">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-xs sm:text-sm whitespace-normal text-left h-auto py-2 px-3 min-w-[120px] max-w-[280px]"
+                  >
                     {example.text.length > 30
                       ? example.text.substring(0, 30) + "..."
                       : example.text}

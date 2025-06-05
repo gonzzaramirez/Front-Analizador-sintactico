@@ -42,7 +42,6 @@ export function ModeToggle() {
       variant="ghost"
       size="icon"
       className={cn(
-        "fixed top-4 left-4 z-50",
         "transition-all duration-300",
         "bg-muted/70 hover:bg-muted",
         "text-foreground border border-border shadow",

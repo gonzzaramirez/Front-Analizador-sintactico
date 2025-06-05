@@ -21,8 +21,8 @@ export function EventsList() {
       <CardContent className="flex flex-col items-center justify-center py-10 text-center">
         <CalendarX2 className="h-16 w-16 text-muted-foreground mb-4" />
         <p className="text-muted-foreground">
-          Ingresa un comando en la pestaña &quot;Ingresar Comando&quot; para
-          crear tu primer evento
+          Ingresa un comando en la pestaña Ingresar Comando para crear tu primer
+          evento
         </p>
       </CardContent>
     </Card>
