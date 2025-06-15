@@ -31,3 +31,84 @@ export async function registerUser(user_name: string, password: string) {
   // Si la respuesta no es exitosa, lanza un error
   if (!res.ok) throw new Error((await res.text()) || "Error en registro");
 }
+
+// Interfaz para la respuesta de acciones
+interface Action {
+  id: number;
+  user_name: string;
+  description: string;
+  date: string;
+}
+
+// Función para crear una nueva acción
+export async function createAction(token: string, command: string) {
+  const res = await fetch(`${API_BASE}/actions`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ comand: command }),
+  });
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    if (res.status === 400) {
+      throw new Error(errorText || "Error en el formato del comando");
+    }
+    if (res.status === 500) {
+      throw new Error(errorText || "Error al procesar la acción");
+    }
+    throw new Error(errorText || "Error al crear la acción");
+  }
+}
+
+// Función para obtener las acciones del usuario
+export async function getUserActions(
+  token: string,
+  page: number = 1,
+  pageSize: number = 10
+): Promise<Action[]> {
+  const res = await fetch(
+    `${API_BASE}/actions?page=${page}&pageSize=${pageSize}`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  if (!res.ok) {
+    if (res.status === 401) {
+      throw new Error("Token inválido o expirado");
+    }
+    throw new Error("Error al obtener las acciones");
+  }
+
+  return await res.json();
+}
+
+// Función para eliminar una acción
+export async function deleteAction(token: string, actionId: number) {
+  const res = await fetch(`${API_BASE}/actions/${actionId}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    if (res.status === 400) {
+      throw new Error("ID de acción inválido");
+    }
+    if (res.status === 403) {
+      throw new Error("No tienes permiso para eliminar esta acción");
+    }
+    if (res.status === 500) {
+      throw new Error(errorText || "Error al eliminar la acción");
+    }
+    throw new Error(errorText || "Error al eliminar la acción");
+  }
+}

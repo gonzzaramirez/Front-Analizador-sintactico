@@ -16,25 +16,78 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useState } from "react";
+import { createAction } from "@/lib/api";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
-export function CommandForm() {
+// Props del componente CommandForm
+interface CommandFormProps {
+  onActionCreated: () => void; // Callback que se ejecuta cuando se crea una acción
+}
+
+export function CommandForm({ onActionCreated }: CommandFormProps) {
+  // Estados para manejar el comando y el estado de carga
+  const [command, setCommand] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+
+  // Ejemplos de comandos predefinidos para ayudar al usuario
   const examples = [
     {
-      text: "Agendá reunión con Juan el viernes a las 15hs",
+      text: "agendá reunión con Juan el viernes a las 15hs",
       description: "Crea un evento para el próximo viernes",
     },
     {
-      text: "Recordame pagar la factura de luz mañana",
+      text: "recordame pagar la factura de luz mañana",
       description: "Crea un recordatorio para mañana",
     },
     {
-      text: "El lunes tengo que llevar el auto al mecánico",
-      description: "Crea un recordatorio para el próximo lunes",
+      text: "agendá cena mañana",
+      description: "Crea un evento para el próximo día",
     },
   ];
 
+  // Manejador del envío del formulario
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!command.trim()) {
+      toast.error("Por favor ingresa un comando");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      // Verificar autenticación
+      const token = localStorage.getItem("token");
+      if (!token) {
+        toast.error("Debes iniciar sesión para crear acciones");
+        router.push("/login");
+        return;
+      }
+
+      // Crear la acción y manejar la respuesta
+      await createAction(token, command);
+      toast.success("La acción se ha creado correctamente");
+      setCommand(""); // Limpiar el input
+      onActionCreated(); // Actualizar el contador
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Error al crear la acción"
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Manejador para cuando se hace clic en un ejemplo
+  const handleExampleClick = (exampleText: string) => {
+    setCommand(exampleText);
+  };
+
   return (
     <Card className="w-full">
+      {/* Encabezado del formulario */}
       <CardHeader>
         <CardTitle>Ingresa un comando</CardTitle>
         <CardDescription>
@@ -42,18 +95,22 @@ export function CommandForm() {
           recordatorio
         </CardDescription>
       </CardHeader>
+      {/* Contenido del formulario */}
       <CardContent>
-        <form className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="flex space-x-2">
             <Input
+              value={command}
+              onChange={(e) => setCommand(e.target.value)}
               placeholder="Ej: Agendá reunión con Juan el viernes a las 15hs"
               className="flex-1"
+              disabled={isLoading}
             />
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button type="submit" className="">
-                    Analizar
+                  <Button type="submit" disabled={isLoading}>
+                    {isLoading ? "Analizando..." : "Analizar"}
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
@@ -64,6 +121,7 @@ export function CommandForm() {
           </div>
         </form>
       </CardContent>
+      {/* Pie del formulario con ejemplos */}
       <CardFooter className="flex-col items-start">
         <div className="flex items-center mb-2">
           <Lightbulb className="h-5 w-5 mr-2 text-yellow-500" />
@@ -80,6 +138,8 @@ export function CommandForm() {
                     variant="outline"
                     size="sm"
                     className="text-xs sm:text-sm whitespace-normal text-left h-auto py-2 px-3 min-w-[120px] max-w-[280px]"
+                    onClick={() => handleExampleClick(example.text)}
+                    disabled={isLoading}
                   >
                     {example.text.length > 30
                       ? example.text.substring(0, 30) + "..."
