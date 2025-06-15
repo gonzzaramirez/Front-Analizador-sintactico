@@ -29,6 +29,29 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { CommandAnalysis } from "./command-analysis";
 
+// Constantes para validación
+const PATTERNS = {
+  VERB: /^(agendá|anotá|recordame)/i,
+  DESCRIPTION: /^(?:agendá|anotá|recordame)\s+([A-Za-zÁÉÍÓÚÑáéíóúñüÜ]+\s*)+/i,
+  DATE: /\b(?:hoy|mañana|lunes|martes|miércoles|jueves|viernes|sábado|domingo|\d{1,2}\s+de\s+\w+(\s+\d{4})?)\b/i,
+  TIME: /a las\s+(?:[01]?\d|2[0-3]):[0-5]\d/i,
+} as const;
+
+const VALID_MONTHS = [
+  "enero",
+  "febrero",
+  "marzo",
+  "abril",
+  "mayo",
+  "junio",
+  "julio",
+  "agosto",
+  "septiembre",
+  "octubre",
+  "noviembre",
+  "diciembre",
+] as const;
+
 interface CommandFormProps {
   onActionCreated: () => void;
 }
@@ -58,91 +81,56 @@ export function CommandForm({ onActionCreated }: CommandFormProps) {
     },
   ];
 
+  // Validación en tiempo real
   useEffect(() => {
     const errors: string[] = [];
     const cmd = command.trim();
     const low = cmd.toLowerCase();
 
-    const verbMatch = /^(agendá|anotá|recordame)/i.test(low);
-    const descMatch =
-      /^(?:agendá|anotá|recordame)\s+([A-Za-zÁÉÍÓÚÑáéíóúñüÜ]+\s*)+/i.test(cmd);
-    const dateMatch =
-      /\b(?:hoy|mañana|lunes|martes|miércoles|jueves|viernes|sábado|domingo|\d{1,2}\s+de\s+\w+(\s+\d{4})?)\b/i.test(
-        cmd
-      );
-    const timeMatch = /a las\s+(\d{1,2}):(\d{2})/.exec(cmd);
-
+    // Validaciones básicas
     if (!cmd) {
       setHint("Debe comenzar con 'agendá', 'anotá' o 'recordame'.");
       setValidationErrors(errors);
       return;
     }
 
-    if (!verbMatch) {
+    // Validación de verbo
+    if (!PATTERNS.VERB.test(low)) {
       setHint("Verbo inválido. Usa 'agendá', 'anotá' o 'recordame'.");
-    } else if (!descMatch) {
+    }
+    // Validación de descripción
+    else if (!PATTERNS.DESCRIPTION.test(cmd)) {
       setHint("Añade una descripción, p.ej. 'reunión con Juan'.");
-    } else if (!dateMatch) {
+    }
+    // Validación de fecha
+    else if (!PATTERNS.DATE.test(cmd)) {
       setHint("Indica una fecha: 'hoy', 'mañana', 'viernes' o '12 de mayo'.");
-    } else if (!timeMatch) {
+    }
+    // Validación de hora
+    else if (!PATTERNS.TIME.test(cmd)) {
       setHint("Agrega una hora: 'a las HH:MM', ej. 'a las 15:00'.");
     } else {
       setHint("");
     }
 
-    // Validar descripción sin tokens de fecha/hora
-    const descOnly = cmd
-      .replace(/^(agendá|anotá|recordame)/i, "")
-      .replace(
-        /\b(?:hoy|mañana|lunes|martes|miércoles|jueves|viernes|sábado|domingo|\d{1,2}\s+de\s+\w+(\s+\d{4})?)\b/gi,
-        ""
-      )
-      .replace(/a las\s+\d{1,2}:\d{2}/i, "")
-      .trim();
-
-    if (/[^\sa-zA-ZáéíóúÁÉÍÓÚñÑüÜ]/.test(descOnly)) {
-      errors.push("La descripción solo puede tener letras y espacios.");
+    // Validaciones adicionales
+    if (cmd.length < 5) {
+      errors.push("Muy corto: añade más detalles");
+    }
+    if (cmd.length > 200) {
+      errors.push("Muy largo: reduce la descripción");
     }
 
-    if (timeMatch) {
-      const [_, h, m] = timeMatch.map(Number);
-      if (h > 23 || m > 59) errors.push("Hora fuera de rango");
-      if (m < 10 && timeMatch[2].length === 1) {
-        errors.push("Minutos deben tener 2 dígitos");
-      }
-    }
-
-    const validMonths = [
-      "enero",
-      "febrero",
-      "marzo",
-      "abril",
-      "mayo",
-      "junio",
-      "julio",
-      "agosto",
-      "septiembre",
-      "octubre",
-      "noviembre",
-      "diciembre",
-    ];
+    // Validación de mes si existe
     const monthMatch = cmd.match(/\d{1,2}\s+de\s+(\w+)/i);
-    if (monthMatch && !validMonths.includes(monthMatch[1].toLowerCase())) {
+    if (
+      monthMatch &&
+      !VALID_MONTHS.includes(
+        monthMatch[1].toLowerCase() as (typeof VALID_MONTHS)[number]
+      )
+    ) {
       errors.push("Mes inválido");
     }
-
-    const fullPattern = new RegExp(
-      `^(agendá|anotá|recordame)\\s+([A-Za-zÁÉÍÓÚÑáéíóúñüÜ]+\\s+)*` +
-        `((hoy|mañana|lunes|martes|miércoles|jueves|viernes|sábado|domingo|\\d{1,2}\\s+de\\s+(${validMonths.join(
-          "|"
-        )})(\\s+\\d{4})?)?)` +
-        `(\\s+a las\\s+(?:[01]?\\d|2[0-3]):[0-5]\\d)?$`,
-      "i"
-    );
-
-    if (!fullPattern.test(cmd)) errors.push("Formato inválido según gramática");
-    if (cmd.length < 5) errors.push("Muy corto: añade más detalles");
-    if (cmd.length > 200) errors.push("Muy largo: reduce la descripción");
 
     setValidationErrors(errors);
   }, [command]);
@@ -187,28 +175,22 @@ export function CommandForm({ onActionCreated }: CommandFormProps) {
     return [
       {
         text: "Verbo válido",
-        completed: /^(agendá|anotá|recordame)/i.test(low),
+        completed: PATTERNS.VERB.test(low),
         icon: CheckCircle2,
       },
       {
         text: "Descripción válida",
-        completed:
-          /^(?:agendá|anotá|recordame)\s+([A-Za-zÁÉÍÓÚÑáéíóúñüÜ]+\s*)+/i.test(
-            cmd
-          ),
+        completed: PATTERNS.DESCRIPTION.test(cmd),
         icon: CheckCircle2,
       },
       {
         text: "Fecha válida",
-        completed:
-          /\b(?:hoy|mañana|lunes|martes|miércoles|jueves|viernes|sábado|domingo|\d{1,2}\s+de\s+\w+(\s+\d{4})?)\b/i.test(
-            cmd
-          ),
+        completed: PATTERNS.DATE.test(cmd),
         icon: CheckCircle2,
       },
       {
         text: "Hora válida",
-        completed: /a las\s+(?:[01]?\d|2[0-3]):[0-5]\d/.test(cmd),
+        completed: PATTERNS.TIME.test(cmd),
         icon: CheckCircle2,
       },
     ];
@@ -256,7 +238,7 @@ export function CommandForm({ onActionCreated }: CommandFormProps) {
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Usa la gramática sugerida</p>
+                    <p>Analiza el comando antes de guardar</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -264,7 +246,7 @@ export function CommandForm({ onActionCreated }: CommandFormProps) {
 
             <div className="space-y-3">
               {command.trim() && (
-                <div className="grid grid-cols-2 gap-2 p-3  rounded-lg border border-blue-100 dark:border-blue-900">
+                <div className="grid grid-cols-2 gap-2 p-3 rounded-lg border border-blue-100 dark:border-blue-900">
                   {getValidationSteps().map((step, index) => (
                     <div
                       key={index}
