@@ -23,42 +23,42 @@ export function CommandPatterns() {
   const patterns = [
     {
       type: "evento",
-      pattern: "Agendá [evento] el [fecha] a las [hora]",
-      example: "Agendá asado con Seba el viernes a las 15hs",
+      pattern: "Agendá [evento] [fecha] a las [hora]",
+      example: "Agendá reunión importante martes a las 14:00",
     },
     {
       type: "evento",
-      pattern: "Anotá [evento] el [fecha]",
-      example: "Anotá turno con el médico el 12 de mayo a las 9hs",
+      pattern: "Anotá [evento] [fecha] a las [hora]",
+      example: "Anotá cena con amigos 15 de marzo 2024 a las 21:00",
     },
     {
       type: "recordatorio",
-      pattern: "Recordame [tarea] el [fecha]",
-      example: "Recordame pagar la boleta de la luz mañana",
+      pattern: "Recordame [tarea] [fecha]",
+      example: "Recordame reunión lunes",
     },
     {
       type: "recordatorio",
-      pattern: "El [fecha] tengo que [tarea]",
-      example: "El lunes tengo que llevar el auto al taller",
+      pattern: "Recordame [tarea] [fecha] a las [hora]",
+      example: "Recordame sacar la basura  lunes a las 15:00",
     },
   ];
 
   const datePatterns = [
     { pattern: "mañana", example: "mañana" },
     { pattern: "hoy", example: "hoy" },
-    { pattern: "pasado mañana", example: "pasado mañana" },
     { pattern: "[día de la semana]", example: "lunes, martes, etc." },
     { pattern: "[número] de [mes]", example: "12 de mayo" },
+    { pattern: "[número] de [mes] [año]", example: "15 de marzo 2024" },
   ];
 
   const timePatterns = [
+    { pattern: "a las [hora]:[minutos]", example: "a las 15:30" },
     { pattern: "a las [hora]hs", example: "a las 15hs" },
     { pattern: "a las [hora] [am/pm]", example: "a las 3 pm" },
-    { pattern: "a las [hora]:[minutos]", example: "a las 15:30" },
   ];
 
   return (
-    <section className="w-full max-w-5xl mx-auto space-y-6">
+    <section className="w-full max-w-5xl mx-auto space-y-6 ">
       <Card>
         <CardHeader>
           <CardTitle>Patrones de Comandos Reconocidos</CardTitle>
@@ -99,7 +99,7 @@ export function CommandPatterns() {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-5">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">

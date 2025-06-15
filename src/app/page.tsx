@@ -26,18 +26,19 @@ export default function Home() {
     setToken(null);
   };
 
-  // Si no hay token, muestro el formulario de login/registro
+  // Si no hay token, se muestra el formulario de login/registro
   if (!token) {
     return (
       <div className="min-h-screen flex items-center justify-center w-full">
         <div className="w-full max-w-sm px-4">
+          <h1 className="text-2xl font-bold text-center mb-4">Autenticación</h1>
           <AuthTabs onLogin={(t) => setToken(t)} />
         </div>
       </div>
     );
   }
 
-  // Una vez logueado, renderizo la app principal
+  // Una vez logueado, se renderiza la app principal
   return (
     <main className="container mx-auto py-10 px-4 md:px-6">
       {/* Header: toggle de modo y botón de logout */}

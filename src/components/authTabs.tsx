@@ -95,10 +95,8 @@ export default function AuthTabs({ onLogin }: AuthTabsProps) {
   };
 
   return (
-    <Card className="max-w-md mx-auto mt-10">
-      <CardHeader>
-        <CardTitle>Autenticación</CardTitle>
-      </CardHeader>
+    <Card className="max-w-md mx-auto ">
+      <CardHeader></CardHeader>
       <CardContent>
         <Tabs
           defaultValue="login"
@@ -106,7 +104,7 @@ export default function AuthTabs({ onLogin }: AuthTabsProps) {
           onValueChange={handleTabChange}
           className="w-full"
         >
-          <TabsList className="w-full flex justify-center mb-4">
+          <TabsList className="w-full flex justify-center mb-4 -mt-8">
             <TabsTrigger value="login">Iniciar sesión</TabsTrigger>
             <TabsTrigger value="register">Registrarse</TabsTrigger>
           </TabsList>
