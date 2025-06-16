@@ -7,6 +7,7 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { CalendarX2, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getUserActions, deleteAction } from "@/lib/api";
@@ -21,6 +22,7 @@ interface Action {
   id: number;
   user_name: string;
   description: string;
+  type: string; // "evento" o "recordatorio"
   date: string;
 }
 
@@ -130,7 +132,19 @@ export function EventsList({ onEventCountChange }: EventsListProps) {
               className="flex items-center justify-between p-4 border rounded-lg"
             >
               <div>
-                <p className="font-medium">{action.description}</p>
+                <div className="flex items-center gap-2 mb-1">
+                  <p className="font-medium">{action.description}</p>
+                  <Badge
+                    variant={action.type === "evento" ? "default" : "secondary"}
+                    className={
+                      action.type === "evento"
+                        ? "bg-blue-100 text-blue-800 hover:bg-blue-200"
+                        : "bg-orange-100 text-orange-800 hover:bg-orange-200"
+                    }
+                  >
+                    {action.type === "evento" ? "Evento" : "Recordatorio"}
+                  </Badge>
+                </div>
                 <p className="text-sm text-muted-foreground">
                   {format(
                     new Date(action.date),

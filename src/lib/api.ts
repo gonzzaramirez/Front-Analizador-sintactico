@@ -37,6 +37,7 @@ interface Action {
   id: number;
   user_name: string;
   description: string;
+  type: string; // "evento" o "recordatorio"
   date: string;
 }
 
