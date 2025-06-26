@@ -2,58 +2,178 @@
 
 Frontend del proyecto de analizador sintáctico de una agenda, para la materia de Teoría de Computación de la Licenciatura en Sistemas de Información de la UNNE.
 
-## 🚀 Stack
+## 🚀 Stack Tecnológico
 
-- ⚛️ **Next.js** – Framework React
-- 🎨 **ShadCN/UI** – Componentes accesibles y personalizables
-- 🧩 **TweakCN** – Editor visual de diseño
-- 💨 **Tailwind CSS** – Utilidades CSS
-- 🧠 **TypeScript** – Tipado fuerte para JavaScript
+### Core Framework
+
+- ⚛️ **Next.js**
+- 🧠 **TypeScript** –
+
+### UI & Styling
+
+- 🎨 **ShadCN/UI** –
+- 💨 **Tailwind CSS** –
+
+### Visualización & UX
+
+- 🌳 **react-d3-tree** – Visualización de árboles sintácticos
+- 📅 **date-fns** – Manipulación de fechas
+- 🔔 **sonner** – Notificaciones toast
+
+### Validación & Utilidades
+
+- ✅ **zod** – Validación de esquemas TypeScript
 
 ## ⚙️ Instalación
 
-Cloná el repo y ejecutá:
-
 ```bash
-git clone <tu-repo-frontend>
-cd <tu-repo-frontend>
+git clone <https://github.com/gonzzaramirez/Front-Analizador-sintactico>
+cd Front-Analizador-sintactico
 npm install
 npm run dev
 ```
 
-Asegurate de definir la variable de entorno para la API en un archivo `.env.local` en la raíz del proyecto:
+### Variables de Entorno
+
+Crea un archivo `.env.local` en la raíz del proyecto:
 
 ```ini
 NEXT_PUBLIC_API_URL=http://localhost:8080
 ```
 
-## 🔌 Comunicación con el Backend en Go
+## 🏗️ Arquitectura de Componentes
 
-El frontend consume los endpoints del backend desarrollado en Go, disponible en el repositorio:
+### Componentes Principales
 
-[https://github.com/RodrigoGonzalez78/go_analyzer](https://github.com/RodrigoGonzalez78/go_analyzer)
+#### 🔐 **AuthTabs** (`authTabs.tsx`)
+
+- Maneja la autenticación de usuarios (login/registro)
+- Utiliza pestañas para alternar entre formularios
+- Integra validación con Zod
+- Gestiona tokens JWT en localStorage
+
+#### 📝 **CommandForm** (`command-form.tsx`)
+
+- Formulario principal para ingresar comandos
+- Validación del formato
+- Integración con el análisis sintáctico
+- Manejo de estados de carga y errores
+
+#### 🔍 **CommandAnalysis** (`command-analysis.tsx`)
+
+- Visualiza el análisis sintáctico del comando
+- Renderiza árboles sintácticos con `react-d3-tree`
+- Muestra errores de parsing con posiciones
+- Permite guardar comandos válidos como acciones
+
+#### 📋 **EventList** (`event-list.tsx`)
+
+- Lista paginada de acciones del usuario
+- Operaciones (crear, leer, eliminar)
+- Filtrado por tipo (evento/recordatorio)
+- Integración con el sistema de autenticación
+
+#### 🎯 **CommandPatterns** (`command-patterns.tsx`)
+
+- Muestra ejemplos de comandos válidos
+- Guía de uso para el usuario
+- Patrones de sintaxis soportados
+
+#### 📚 **UserGuide** (`userGuide.tsx`)
+
+- Documentación interactiva del sistema
+
+## 🔌 API & Comunicación con Backend
+
+### Configuración Base
+
+```typescript
+const API_BASE = process.env.NEXT_PUBLIC_API_URL!;
+```
 
 ### Endpoints Principales
 
-| Ruta             | Método | Descripción                                             |
-| ---------------- | ------ | ------------------------------------------------------- |
-| `/auth/login`    | POST   | Autentica al usuario y devuelve un JWT                  |
-| `/auth/register` | POST   | Registra un nuevo usuario                               |
-| `/actions`       | POST   | Crea una nueva acción (requiere JWT en Authorization)   |
-| `/actions`       | GET    | Lista las acciones del usuario (paginado, requiere JWT) |
+#### 🔐 Autenticación
 
-> **Nota:** Todas las rutas protegidas deben incluir el encabezado:
->
-> ```http
-> Authorization: Bearer <token_jwt>
-> ```
+```typescript
+// Login de usuario
+POST /auth/login
+Body: { user_name: string, password: string }
+Response: { token: string }
 
-La lógica de comunicación con la API se encuentra en el archivo `src/lib/api.ts`, donde se utilizan funciones como `loginUser`, `registerUser`, `fetchActions` y `createAction` para interactuar con el backend.
+// Registro de usuario
+POST /auth/register
+Body: { user_name: string, password: string }
+```
 
-## 📄 Documentación de la API
+#### 📋 Gestión de Acciones
 
-Para más detalles sobre la gramática, validaciones y formatos de solicitud/respuesta, revisá la sección **Documentación de la API** en el repositorio del backend.
+```typescript
+// Crear acción
+POST /actions
+Headers: { Authorization: "Bearer <token>" }
+Body: { comand: string }
+
+// Obtener acciones (paginado)
+GET /actions?page=1&pageSize=10
+Headers: { Authorization: "Bearer <token>" }
+
+// Eliminar acción
+DELETE /actions/{id}
+Headers: { Authorization: "Bearer <token>" }
+```
+
+#### 🔍 Análisis Sintáctico
+
+```typescript
+// Analizar comando (sin guardar)
+POST /analyze
+Body: { command: string }
+Response: {
+  success: boolean,
+  ast?: any,
+  error?: { type, message, position },
+  analysis?: { command, verb, words, date, time, description }
+}
+```
+
+### Funciones API Principales
+
+#### `loginUser(user_name, password)`
+
+- Autentica al usuario y retorna JWT
+- Maneja errores 401 (credenciales inválidas)
+
+#### `registerUser(user_name, password)`
+
+- Registra nuevo usuario
+- Validación de datos en frontend
+
+#### `createAction(token, command)`
+
+- Crea nueva acción con comando analizado
+- Requiere token JWT válido
+- Maneja errores de formato (400) y procesamiento (500)
+
+#### `getUserActions(token, page, pageSize)`
+
+- Obtiene acciones paginadas del usuario
+- Maneja token expirado (401)
+
+#### `deleteAction(token, actionId)`
+
+- Elimina acción específica
+- Validación de permisos (403)
+
+#### `analyzeCommand(command)`
+
+- Analiza comando sin persistencia
+- Retorna AST y análisis detallado
+- Manejo de errores de sintaxis
+
+## 🔗 Backend Relacionado
+
+El frontend consume los endpoints del backend desarrollado en Go:
+[https://github.com/RodrigoGonzalez78/go_analyzer](https://github.com/RodrigoGonzalez78/go_analyzer)
 
 ---
-
-¡Listo! Ahora el frontend está conectado al backend en Go y listo para consumir sus servicios.

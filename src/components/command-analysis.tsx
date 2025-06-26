@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import { createAction, analyzeCommand } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -28,7 +29,7 @@ interface CommandAnalysisProps {
   onActionCreated?: () => void;
   onClearForm?: () => void;
 }
-
+//
 interface AnalysisResult {
   success: boolean;
   ast?: any;
@@ -128,6 +129,7 @@ export function CommandAnalysis({
   );
   const [isAnalyzing, setIsAnalyzing] = useState(true);
   const router = useRouter();
+  const { theme } = useTheme();
 
   useEffect(() => {
     const performAnalysis = async () => {
@@ -314,6 +316,17 @@ export function CommandAnalysis({
             <h3 className="font-medium">Árbol de Comandos</h3>
           </div>
           <div className="h-[420px] w-full flex items-center justify-center overflow-auto">
+            <style jsx>{`
+              .tree-path {
+                stroke-width: 2px !important;
+              }
+              .tree-path.stroke-white {
+                stroke: white !important;
+              }
+              .tree-path.stroke-gray-400 {
+                stroke: #9ca3af !important;
+              }
+            `}</style>
             <Tree
               data={analysisResult.ast}
               orientation="vertical"
@@ -321,7 +334,11 @@ export function CommandAnalysis({
               separation={{ siblings: 1.5, nonSiblings: 2 }}
               translate={{ x: 350, y: 100 }}
               renderCustomNodeElement={renderCustomNode}
-              pathClassFunc={() => "stroke-gray-600 dark:stroke-white stroke-2"}
+              pathClassFunc={() =>
+                `tree-path ${
+                  theme === "dark" ? "stroke-white" : "stroke-gray-400"
+                }`
+              }
               zoom={1}
               enableLegacyTransitions={true}
               transitionDuration={350}
