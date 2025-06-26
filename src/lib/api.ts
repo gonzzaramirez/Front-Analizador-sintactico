@@ -113,3 +113,42 @@ export async function deleteAction(token: string, actionId: number) {
     throw new Error(errorText || "Error al eliminar la acción");
   }
 }
+
+// Interfaz para la respuesta de análisis
+interface AnalyzeResponse {
+  success: boolean;
+  ast?: any;
+  error?: {
+    type: string;
+    message: string;
+    position: number;
+  };
+  analysis?: {
+    command: string;
+    verb: string;
+    words: string[];
+    date: string;
+    time: string;
+    description: string;
+  };
+}
+
+// Función para analizar un comando sin guardarlo
+export async function analyzeCommand(
+  command: string
+): Promise<AnalyzeResponse> {
+  const res = await fetch(`${API_BASE}/analyze`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ command: command }),
+  });
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    throw new Error(errorText || "Error al analizar el comando");
+  }
+
+  return await res.json();
+}

@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createAction } from "@/lib/api";
@@ -13,13 +13,7 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import {
-  Lightbulb,
-  AlertCircle,
-  Info,
-  Loader2,
-  CheckCircle2,
-} from "lucide-react";
+import { Lightbulb, Info, Loader2 } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -29,29 +23,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { CommandAnalysis } from "./command-analysis";
 
-// Constantes para validación
-const PATTERNS = {
-  VERB: /^(agendá|anotá|recordame)/i,
-  DESCRIPTION: /^(?:agendá|anotá|recordame)\s+([A-Za-zÁÉÍÓÚÑáéíóúñüÜ]+\s*)+/i,
-  DATE: /\b(?:hoy|mañana|lunes|martes|miércoles|jueves|viernes|sábado|domingo|\d{1,2}\s+de\s+\w+(\s+\d{4})?)\b/i,
-  TIME: /a las\s+(?:[01]?\d|2[0-3]):[0-5]\d/i,
-} as const;
-
-const VALID_MONTHS = [
-  "enero",
-  "febrero",
-  "marzo",
-  "abril",
-  "mayo",
-  "junio",
-  "julio",
-  "agosto",
-  "septiembre",
-  "octubre",
-  "noviembre",
-  "diciembre",
-] as const;
-
 interface CommandFormProps {
   onActionCreated: () => void;
 }
@@ -60,10 +31,6 @@ export function CommandForm({ onActionCreated }: CommandFormProps) {
   const [command, setCommand] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [validationErrors, setValidationErrors] = useState<string[]>([]);
-  const [hint, setHint] = useState(
-    "Empieza con 'agendá', 'anotá' o 'recordame'."
-  );
   const router = useRouter();
 
   const examples = [
@@ -81,64 +48,10 @@ export function CommandForm({ onActionCreated }: CommandFormProps) {
     },
   ];
 
-  // Validación en tiempo real
-  useEffect(() => {
-    const errors: string[] = [];
-    const cmd = command.trim();
-    const low = cmd.toLowerCase();
-
-    // Validaciones básicas
-    if (!cmd) {
-      setHint("Debe comenzar con 'agendá', 'anotá' o 'recordame'.");
-      setValidationErrors(errors);
-      return;
-    }
-
-    // Validación de verbo
-    if (!PATTERNS.VERB.test(low)) {
-      setHint("Verbo inválido. Usa 'agendá', 'anotá' o 'recordame'.");
-    }
-    // Validación de descripción
-    else if (!PATTERNS.DESCRIPTION.test(cmd)) {
-      setHint("Añade una descripción, p.ej. 'reunión con Juan'.");
-    }
-    // Validación de fecha
-    else if (!PATTERNS.DATE.test(cmd)) {
-      setHint("Indica una fecha: 'hoy', 'mañana', 'viernes' o '12 de mayo'.");
-    }
-    // Validación de hora
-    else if (!PATTERNS.TIME.test(cmd)) {
-      setHint("Agrega una hora: 'a las HH:MM', ej. 'a las 15:00'.");
-    } else {
-      setHint("");
-    }
-
-    // Validaciones adicionales
-    if (cmd.length < 5) {
-      errors.push("Muy corto: añade más detalles");
-    }
-    if (cmd.length > 200) {
-      errors.push("Muy largo: reduce la descripción");
-    }
-
-    // Validación de mes si existe
-    const monthMatch = cmd.match(/\d{1,2}\s+de\s+(\w+)/i);
-    if (
-      monthMatch &&
-      !VALID_MONTHS.includes(
-        monthMatch[1].toLowerCase() as (typeof VALID_MONTHS)[number]
-      )
-    ) {
-      errors.push("Mes inválido");
-    }
-
-    setValidationErrors(errors);
-  }, [command]);
-
   const handleAnalyze = (e: React.FormEvent) => {
     e.preventDefault();
-    if (validationErrors.length) {
-      toast.error("Corrige los errores antes de continuar");
+    if (!command.trim()) {
+      toast.error("Ingresa un comando");
       return;
     }
     setIsAnalyzing(true);
@@ -169,33 +82,6 @@ export function CommandForm({ onActionCreated }: CommandFormProps) {
     }
   };
 
-  const getValidationSteps = () => {
-    const cmd = command.trim();
-    const low = cmd.toLowerCase();
-    return [
-      {
-        text: "Verbo válido",
-        completed: PATTERNS.VERB.test(low),
-        icon: CheckCircle2,
-      },
-      {
-        text: "Descripción válida",
-        completed: PATTERNS.DESCRIPTION.test(cmd),
-        icon: CheckCircle2,
-      },
-      {
-        text: "Fecha válida",
-        completed: PATTERNS.DATE.test(cmd),
-        icon: CheckCircle2,
-      },
-      {
-        text: "Hora válida",
-        completed: PATTERNS.TIME.test(cmd),
-        icon: CheckCircle2,
-      },
-    ];
-  };
-
   return (
     <div className="space-y-4">
       <Card>
@@ -223,10 +109,7 @@ export function CommandForm({ onActionCreated }: CommandFormProps) {
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button
-                      type="submit"
-                      disabled={isLoading || !!validationErrors.length}
-                    >
+                    <Button type="submit" disabled={isLoading}>
                       {isLoading ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -245,43 +128,29 @@ export function CommandForm({ onActionCreated }: CommandFormProps) {
             </div>
 
             <div className="space-y-3">
-              {command.trim() && (
-                <div className="grid grid-cols-2 gap-2 p-3 rounded-lg border border-blue-100 dark:border-blue-900">
-                  {getValidationSteps().map((step, index) => (
-                    <div
-                      key={index}
-                      className={`flex items-center space-x-2 text-sm ${
-                        step.completed
-                          ? "text-green-600"
-                          : "text-muted-foreground"
-                      }`}
-                    >
-                      <step.icon className="h-4 w-4" />
-                      <span>{step.text}</span>
-                    </div>
-                  ))}
+              <div className="flex items-center space-x-2 text-sm text-blue-600 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/20 p-3 rounded-md">
+                <Info className="h-4 w-4" />
+                <div>
+                  <p className="font-medium mb-1">
+                    Recomendaciones de formato:
+                  </p>
+                  <ul className="text-xs space-y-1">
+                    <li>
+                      • <strong>Verbos:</strong> agendá, anotá, recordame
+                    </li>
+                    <li>
+                      • <strong>Fechas:</strong> hoy, mañana, lunes, 15 de mayo
+                    </li>
+                    <li>
+                      • <strong>Horas:</strong> a las 15:00, a las 9:30
+                    </li>
+                    <li>
+                      • <strong>Ejemplo:</strong> "agendá reunión con Juan
+                      mañana a las 10:00"
+                    </li>
+                  </ul>
                 </div>
-              )}
-
-              {hint && (
-                <div className="flex items-center space-x-2 text-sm text-blue-600 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/20 p-2 rounded-md">
-                  <Info className="h-4 w-4" />
-                  <p>{hint}</p>
-                </div>
-              )}
-
-              {validationErrors.length > 0 && (
-                <div className="flex items-start space-x-2 text-red-600 bg-red-100 dark:bg-red-900/10 p-2 rounded-md">
-                  <AlertCircle className="mt-1 h-4 w-4" />
-                  <div className="space-y-1">
-                    {validationErrors.map((e, i) => (
-                      <p key={i} className="text-sm">
-                        {e}
-                      </p>
-                    ))}
-                  </div>
-                </div>
-              )}
+              </div>
             </div>
           </form>
         </CardContent>
@@ -317,8 +186,12 @@ export function CommandForm({ onActionCreated }: CommandFormProps) {
       {isAnalyzing && (
         <CommandAnalysis
           command={command}
-          onSave={handleSave}
           isLoading={isLoading}
+          onActionCreated={onActionCreated}
+          onClearForm={() => {
+            setCommand("");
+            setIsAnalyzing(false);
+          }}
         />
       )}
     </div>
