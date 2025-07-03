@@ -1,5 +1,44 @@
 "use client";
 
+// --- Formateo de fechas amigable ---
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+
+function formatFecha(fecha: string): string {
+  // Si es "hoy", "mañana" o día de la semana, mostrar tal cual
+  const especiales = [
+    "hoy", "mañana", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"
+  ];
+  if (especiales.includes(fecha.toLowerCase())) return capitalize(fecha);
+
+  // Detectar formato ISO (YYYY-MM-DDTHH:mm:ss...)
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(fecha)) {
+    try {
+      const d = new Date(fecha);
+      // jueves 3 de julio de 2025 a las 10:00
+      return format(d, "EEEE d 'de' MMMM 'de' yyyy 'a las' HH:mm", { locale: es });
+    } catch {
+      // Si falla, mostrar tal cual
+      return fecha;
+    }
+  }
+
+  // Buscar formato "15 de mayo 2025" o "15 de mayo"
+  const regex = /^(\d{1,2}) de ([a-záéíóúñ]+)(?: (\d{4}))?$/i;
+  const match = fecha.match(regex);
+  if (match) {
+    const dia = match[1];
+    const mes = capitalize(match[2]);
+    const anio = match[3];
+    if (anio) return `${dia} de ${mes} de ${anio}`;
+    return `${dia} de ${mes}`;
+  }
+  return fecha; // fallback
+}
+function capitalize(str: string) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 import {
   Card,
   CardContent,
@@ -14,8 +53,6 @@ import { getUserActions, deleteAction } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
 
 // Interfaz para definir la estructura de una acción
 interface Action {
@@ -146,13 +183,7 @@ export function EventsList({ onEventCountChange }: EventsListProps) {
                   </Badge>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  {format(
-                    new Date(action.date),
-                    "EEEE d 'de' MMMM 'a las' HH:mm",
-                    {
-                      locale: es,
-                    }
-                  )}
+                  {formatFecha(action.date)}
                 </p>
               </div>
               {/* Botón para eliminar acción */}
