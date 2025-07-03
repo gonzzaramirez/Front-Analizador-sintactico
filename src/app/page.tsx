@@ -23,7 +23,7 @@ export default function Home() {
   const loadInitialEventCount = async (token: string) => {
     try {
       const data = await getUserActions(token, 1, 5);
-      setEventCount(data.length);
+      setEventCount(data.total);
     } catch (error) {
       console.error("Error al cargar el contador de eventos:", error);
     }
@@ -36,6 +36,7 @@ export default function Home() {
       await loadInitialEventCount(t);
     }
   };
+
 
   // Efecto para cargar el token y el contador de eventos al iniciar
   useEffect(() => {

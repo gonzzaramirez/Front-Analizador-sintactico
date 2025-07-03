@@ -49,7 +49,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { CalendarX2, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { getUserActions, deleteAction } from "@/lib/api";
+import { getUserActions, deleteAction, PaginatedActionsResponse } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -71,6 +71,7 @@ interface EventsListProps {
 export function EventsList({ onEventCountChange }: EventsListProps) {
   // Estados para manejar la lista de acciones y la paginación
   const [actions, setActions] = useState<Action[]>([]);
+  const [totalActions, setTotalActions] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 5; // Número de eventos por página
@@ -86,8 +87,9 @@ export function EventsList({ onEventCountChange }: EventsListProps) {
       }
 
       const data = await getUserActions(token, currentPage, pageSize);
-      setActions(data);
-      onEventCountChange(data.length);
+      setActions(data.actions);
+      setTotalActions(data.total);
+      onEventCountChange(data.total);
     } catch (error) {
       toast.error("Error al cargar las acciones");
     } finally {

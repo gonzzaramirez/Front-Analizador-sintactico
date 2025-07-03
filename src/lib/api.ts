@@ -33,12 +33,18 @@ export async function registerUser(user_name: string, password: string) {
 }
 
 // Interfaz para la respuesta de acciones
-interface Action {
+export interface Action {
   id: number;
   user_name: string;
   description: string;
   type: string; // "evento" o "recordatorio"
   date: string;
+}
+
+// Nueva interfaz para la respuesta paginada
+export interface PaginatedActionsResponse {
+  actions: Action[];
+  total: number;
 }
 
 // Función para crear una nueva acción
@@ -69,7 +75,7 @@ export async function getUserActions(
   token: string,
   page: number = 1,
   pageSize: number = 10
-): Promise<Action[]> {
+): Promise<PaginatedActionsResponse> {
   const res = await fetch(
     `${API_BASE}/actions?page=${page}&pageSize=${pageSize}`,
     {
